@@ -8,7 +8,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch} from '@fortawesome/free-solid-svg-icons'
 import {getController} from "../context/Actions.jsx"
 import Toast from "react-bootstrap/Toast"
-import {useNavigate} from "react-router-dom"
 
 const Inventory = () => {
     const [price, setPrice] = useState([0, 100000])
@@ -23,7 +22,6 @@ const Inventory = () => {
     const [selectedCategories, setSelectedCategories] = useState([])
     const [selectedBrands, setSelectedBrands] = useState([])
     const [searchTerm, setSearchTerm] = useState("")
-    const navigate = useNavigate()
 
     // Get products, categories and brands
     useEffect(() => {
@@ -79,8 +77,10 @@ const Inventory = () => {
                     if (!response.ok){
                         setToastMessage(body.message)
                         setShowToast(true)
-                    } else
+                    } else {
                         setProducts(body.products)
+                        setFilteredProducts(body.products)
+                    }
                 }
             } catch (error) {
                 console.log(error)
@@ -244,7 +244,7 @@ const Inventory = () => {
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        {products.map((product, index) => (
+                                        {filteredProducts.map((product, index) => (
                                             <tr key={index}>
                                                 <td>{product.name}</td>
                                                 <td>{product.category}</td>

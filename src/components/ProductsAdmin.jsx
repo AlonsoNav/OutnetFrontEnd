@@ -12,6 +12,7 @@ import {deleteController, getController} from "../context/Actions.jsx"
 
 const ProductsAdmin = () => {
     // Variables for the modal
+    const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false)
     const [modalBody, setModalBody] = useState('')
     const [modalTitle, setModalTitle] = useState('')
@@ -89,6 +90,7 @@ const ProductsAdmin = () => {
             } catch (error) {
                 console.log(error)
             }
+            setIsLoading(false)
         }
         fetchCategories()
         fetchBrands()
@@ -238,116 +240,120 @@ const ProductsAdmin = () => {
                     onChange={() => handleBrandChange(brand.name)}/>
     ))
 
-    return (
-        <div className="container-fluid vw-mw-100 position-relative" style={{marginTop: "30px"}}>
-            <Modal centered show={showModal} onHide={()=>setShowModal(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>{modalTitle}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{modalBody}</Modal.Body>
-                <Modal.Footer>
-                    <button className={modalBtn1Style} onClick={()=>setShowModal(false)}>{modalBtn1Text}</button>
-                    {modalBtn2Show && (
-                        <button className={modalBtn2Style} onClick={() =>handleConfirmDelete()}>{modalBtn2Text}</button>
-                    )}
-                </Modal.Footer>
-            </Modal>
-            <div className="row">
-                <div className="col-md-3 p-1">
-                    <div className="bg-F4F6F0 py-2 px-3 text-start div-scroll">
-                        <h1 className="display-6">Filtros</h1>
-                        <Form>
-                            <Form.Group className="mb-3">
-                                <Form.Label className="h5 text-muted">Precio<br/>
-                                    <p className="h6 mt-1">Rango: ₡{price.at(0)} - ₡{price.at(1)}</p>
-                                </Form.Label>
-                                <Slider
-                                    className="slider w-100 mt-1"
-                                    value={price}
-                                    onChange={setPrice}
-                                    min={minPrice}
-                                    max={maxPrice}
-                                    />
-                            </Form.Group>
-                            <Form.Group className="mb-3">
-                                <Form.Label className="h5 text-muted">Categoría</Form.Label>
-                                {categoriesCheckboxes}
-                            </Form.Group>
-                            <Form.Group className="mb-3">
-                                <Form.Label className="h5 text-muted">Marca</Form.Label>
-                                {brandsCheckboxes}
-                            </Form.Group>
-                        </Form>
-                    </div>
-                </div>
-                <div className="col-md-9 p-1">
-                    <div className="row pb-2">
-                        <div className="col flex-grow-1">
+    if(isLoading) {
+        return (<div>Loading...</div>)
+    }else{
+        return (
+            <div className="container-fluid vw-mw-100 position-relative" style={{marginTop: "30px"}}>
+                <Modal centered show={showModal} onHide={()=>setShowModal(false)}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>{modalTitle}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>{modalBody}</Modal.Body>
+                    <Modal.Footer>
+                        <button className={modalBtn1Style} onClick={()=>setShowModal(false)}>{modalBtn1Text}</button>
+                        {modalBtn2Show && (
+                            <button className={modalBtn2Style} onClick={() =>handleConfirmDelete()}>{modalBtn2Text}</button>
+                        )}
+                    </Modal.Footer>
+                </Modal>
+                <div className="row">
+                    <div className="col-md-3 p-1">
+                        <div className="bg-F4F6F0 py-2 px-3 text-start div-scroll">
+                            <h1 className="display-6">Filtros</h1>
                             <Form>
-                                <InputGroup>
-                                    <InputGroup.Text className="bg-F4F6F0">
-                                        <FontAwesomeIcon icon={faSearch} className="custom-icon-color"/>
-                                    </InputGroup.Text>
-                                    <Form.Control
-                                        className="bg-F4F6F0"
-                                        placeholder="Buscar por nombre..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        maxLength="30"
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="h5 text-muted">Precio<br/>
+                                        <p className="h6 mt-1">Rango: ₡{price.at(0)} - ₡{price.at(1)}</p>
+                                    </Form.Label>
+                                    <Slider
+                                        className="slider w-100 mt-1"
+                                        value={price}
+                                        onChange={setPrice}
+                                        min={minPrice}
+                                        max={maxPrice}
                                     />
-                                </InputGroup>
+                                </Form.Group>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="h5 text-muted">Categoría</Form.Label>
+                                    {categoriesCheckboxes}
+                                </Form.Group>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="h5 text-muted">Marca</Form.Label>
+                                    {brandsCheckboxes}
+                                </Form.Group>
                             </Form>
                         </div>
-                        <div className="col-auto">
-                            <button type="button" className="btn btn-primary" onClick={() => navigate("/admin/products/add")}>
-                                <FontAwesomeIcon icon={faAdd} className="me-2"/>
-                                Nuevo producto
-                            </button>
-                        </div>
                     </div>
-                    <div className="row">
-                        <div className="col">
-                            <div className="bg-F4F6F0 py-3 px-4 text-start">
-                                <h1 className="display-6 mb-2 text-lg-start">Productos</h1>
-                                <div className="table-responsive table-scroll mb-2">
-                                    <Table striped bordered hover>
-                                        <thead>
-                                        <tr>
-                                            <th>Producto</th>
-                                            <th>Categoría</th>
-                                            <th>Cantidad</th>
-                                            <th>Precio</th>
-                                            <th>Acción</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {filteredProducts.map((product, index) => (
-                                            <tr key={index}>
-                                                <td>{product.name}</td>
-                                                <td>{product.category}</td>
-                                                <td>{product.amount}</td>
-                                                <td>₡{product.outlet_price}</td>
-                                                <td>
-                                                    <button className="btn btn-sm btn-primary me-1" aria-label={"Editar producto"} onClick={() => handleEdit(product)}>
-                                                        <FontAwesomeIcon icon={faEdit}/>
-                                                    </button>
-                                                    <button className="btn btn-sm btn-danger" aria-label={"Borrar producto"} onClick={() => handleDelete(product.id)}>
-                                                        <FontAwesomeIcon icon={faTrash}/>
-                                                    </button>
-                                                </td>
+                    <div className="col-md-9 p-1">
+                        <div className="row pb-2">
+                            <div className="col flex-grow-1">
+                                <Form>
+                                    <InputGroup>
+                                        <InputGroup.Text className="bg-F4F6F0">
+                                            <FontAwesomeIcon icon={faSearch} className="custom-icon-color"/>
+                                        </InputGroup.Text>
+                                        <Form.Control
+                                            className="bg-F4F6F0"
+                                            placeholder="Buscar por nombre..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            maxLength="30"
+                                        />
+                                    </InputGroup>
+                                </Form>
+                            </div>
+                            <div className="col-auto">
+                                <button type="button" className="btn btn-primary" onClick={() => navigate("/admin/products/add")}>
+                                    <FontAwesomeIcon icon={faAdd} className="me-2"/>
+                                    Nuevo producto
+                                </button>
+                            </div>
+                        </div>
+                        <div className="row">
+                            <div className="col">
+                                <div className="bg-F4F6F0 py-3 px-4 text-start">
+                                    <h1 className="display-6 mb-2 text-lg-start">Productos</h1>
+                                    <div className="table-responsive table-scroll mb-2">
+                                        <Table striped bordered hover>
+                                            <thead>
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th>Categoría</th>
+                                                <th>Cantidad</th>
+                                                <th>Precio</th>
+                                                <th>Acción</th>
                                             </tr>
-                                        ))}
-                                        </tbody>
-                                    </Table>
+                                            </thead>
+                                            <tbody>
+                                            {filteredProducts.map((product, index) => (
+                                                <tr key={index}>
+                                                    <td>{product.name}</td>
+                                                    <td>{product.category}</td>
+                                                    <td>{product.amount}</td>
+                                                    <td>₡{product.outlet_price}</td>
+                                                    <td>
+                                                        <button className="btn btn-sm btn-primary me-1" aria-label={"Editar producto"} onClick={() => handleEdit(product)}>
+                                                            <FontAwesomeIcon icon={faEdit}/>
+                                                        </button>
+                                                        <button className="btn btn-sm btn-danger" aria-label={"Borrar producto"} onClick={() => handleDelete(product.id)}>
+                                                            <FontAwesomeIcon icon={faTrash}/>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            </tbody>
+                                        </Table>
+                                    </div>
+                                    <button className="btn btn-primary" onClick={() => navigate("/admin/inventory")}>Historial de movimientos</button>
                                 </div>
-                                <button className="btn btn-primary" onClick={() => navigate("/admin/inventory")}>Historial de movimientos</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    )
+        )
+    }
 }
 
 export default ProductsAdmin
