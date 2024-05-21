@@ -1,6 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css'
-import {BrowserRouter, Navigate, Route, Routes} from "react-router-dom";
+import {BrowserRouter, Route, Routes} from "react-router-dom";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Profile from "./components/Profile.jsx";
@@ -17,6 +17,7 @@ import ProductsEditAdmin from "./components/ProductsEditAdmin.jsx";
 import Inventory from "./components/Inventory.jsx";
 import InventoryRequest from "./components/InventoryRequest.jsx";
 import commentHistory from './components/commentHistory.jsx';
+import NotImplemented from "./components/NotImplemented.jsx";
 
 function App() {
     const renderWithAdminHeader = (Component) => (
@@ -50,6 +51,8 @@ function App() {
             <Route path="/admin/products/edit" element={renderWithAdminHeader(ProductsEditAdmin)} />
             <Route path="/admin/inventory" element={renderWithAdminHeader(Inventory)} />
             <Route path="/admin/inventory/request" element={renderWithAdminHeader(InventoryRequest)} />
+            <Route path="/admin/statistics" element={renderWithAdminHeader(NotImplemented)} />
+            <Route path="/admin/auctions" element={renderWithAdminHeader(NotImplemented)} />
         </Routes>
     </BrowserRouter>
     )
