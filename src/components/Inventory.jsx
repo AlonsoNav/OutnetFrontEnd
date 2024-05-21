@@ -1,39 +1,27 @@
-import './Style.css'
 import Form from "react-bootstrap/Form"
 import InputGroup from "react-bootstrap/InputGroup"
 import Table from "react-bootstrap/Table"
-import Modal from "react-bootstrap/Modal"
 import Slider from "react-slider"
+import './Style.css'
 import {useState, useEffect} from "react"
-import {useNavigate} from "react-router-dom"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearch, faAdd, faEdit, faTrash} from '@fortawesome/free-solid-svg-icons'
-import {deleteController, getController} from "../context/Actions.jsx"
+import { faSearch} from '@fortawesome/free-solid-svg-icons'
+import {getController} from "../context/Actions.jsx"
+import Toast from "react-bootstrap/Toast"
 
-const ProductsAdmin = () => {
-    // Variables for the modal
-    const [showModal, setShowModal] = useState(false)
-    const [modalBody, setModalBody] = useState('')
-    const [modalTitle, setModalTitle] = useState('')
-    const [modalBtn1Style, setModalBtn1Style] = useState('')
-    const [modalBtn2Style, setModalBtn2Style] = useState('')
-    const [modalBtn1Text, setModalBtn1Text] = useState('')
-    const [modalBtn2Text, setModalBtn2Text] = useState('')
-    const [modalBtn2Show, setModalBtn2Show] = useState(false)
-    // Variables for filters
+const Inventory = () => {
+    const [price, setPrice] = useState([0, 100000])
+    const [categories, setCategories] = useState([])
+    const [brands, setBrands] = useState([])
+    const [products, setProducts] = useState([])
+    const [showToast, setShowToast] = useState(false)
+    const [toastMessage, setToastMessage] = useState('')
+    const [minPrice, setMinPrice] = useState(0)
+    const [maxPrice, setMaxPrice] = useState(1000)
     const [filteredProducts, setFilteredProducts] = useState([])
     const [selectedCategories, setSelectedCategories] = useState([])
     const [selectedBrands, setSelectedBrands] = useState([])
     const [searchTerm, setSearchTerm] = useState("")
-    const [price, setPrice] = useState([0, 100000])
-    const [minPrice, setMinPrice] = useState(0)
-    const [maxPrice, setMaxPrice] = useState(1000)
-    const [id, setId] = useState(null)
-    // Variables for data sets
-    const [categories, setCategories] = useState([])
-    const [brands, setBrands] = useState([])
-    const [products, setProducts] = useState([])
-    const navigate = useNavigate()
 
     // Get products, categories and brands
     useEffect(() => {
@@ -41,14 +29,17 @@ const ProductsAdmin = () => {
             try {
                 const response = await getController("/get_categories")
 
-                if (!response)
-                    noResponse()
-                else {
+                if (!response) {
+                    setToastMessage("Fallo inesperado en la conexión")
+                    setShowToast(true)
+                }else {
                     const body = await response.json()
-                    if (!response.ok)
-                        messageFromAPI("Error", body.message)
-                    else
+                    if (!response.ok) {
+                        setToastMessage(body.message)
+                        setShowToast(true)
+                    } else {
                         setCategories(body.list)
+                    }
                 }
             } catch (error) {
                 console.log(error)
@@ -58,14 +49,17 @@ const ProductsAdmin = () => {
             try {
                 const response = await getController("/get_brands")
 
-                if (!response) 
-                    noResponse()
-                else {
+                if (!response) {
+                    setToastMessage("Fallo inesperado en la conexión")
+                    setShowToast(true)
+                }else {
                     const body = await response.json()
-                    if (!response.ok)
-                        messageFromAPI("Error", body.message)
-                    else
+                    if (!response.ok) {
+                        setToastMessage(body.message)
+                        setShowToast(true)
+                    } else {
                         setBrands(body.list)
+                    }
                 }
             } catch (error) {
                 console.log(error)
@@ -73,15 +67,17 @@ const ProductsAdmin = () => {
         }
         const fetchProducts = async () => {
             try {
-                const response = await getController("/get_products")
+                const response = await getController("/get_inventory")
 
-                if (!response) 
-                    noResponse()
-                else {
+                if (!response) {
+                    setToastMessage("Fallo inesperado en la conexión")
+                    setShowToast(true)
+                }else {
                     const body = await response.json()
-                    if (!response.ok) 
-                        messageFromAPI("Error", body.message)
-                    else{
+                    if (!response.ok){
+                        setToastMessage(body.message)
+                        setShowToast(true)
+                    } else {
                         setProducts(body.products)
                         setFilteredProducts(body.products)
                     }
@@ -120,24 +116,6 @@ const ProductsAdmin = () => {
 
         setFilteredProducts(filteredProducts)
     }, [price, products, selectedCategories, selectedBrands, searchTerm])
-
-    const noResponse = () =>{
-        setModalTitle("Error")
-        setModalBody("Fallo inesperado en el servidor.")
-        setModalBtn1Text("OK")
-        setModalBtn1Style("btn btn-secondary")
-        setModalBtn2Show(false)
-        setShowModal(true)
-    }
-
-    const messageFromAPI = (title, message) =>{
-        setModalTitle(title)
-        setModalBody(message)
-        setModalBtn1Text("OK")
-        setModalBtn1Style("btn btn-secondary")
-        setModalBtn2Show(false)
-        setShowModal(true)
-    }
 
     const filterProductsByCategory = (product) => {
         if (selectedCategories.length === 0)
@@ -178,53 +156,9 @@ const ProductsAdmin = () => {
             setSelectedBrands([...selectedBrands, brand])
     }
 
-    const handleDelete = (id) => {
-        setId(id)
-        setModalTitle("Confirmar eliminación de producto")
-        setModalBody("¿Realmente quieres borrar este producto?")
-        setModalBtn1Text("Cancelar")
-        setModalBtn1Style("btn btn-secondary")
-        setModalBtn2Text("Borrar producto")
-        setModalBtn2Style("btn btn-danger")
-        setModalBtn2Show(true)
-        setShowModal(true)
-    }
-
-    const handleEdit = (product) => {
-        localStorage.setItem("product", JSON.stringify(product))
-        navigate("/admin/products/edit")
-    }
-
-    const handleConfirmDelete = async () =>{
-        let payload = {id}
-
-        try {
-            let response = await deleteController(payload, "delete_product")
-
-            if (!response)
-                noResponse()
-            else{
-                const body = await response.json()
-                if (response.ok){
-                    const updatedProducts = products.filter((product) => product.id !== id)
-                    setProducts(updatedProducts)
-                    const updatedFilteredProducts = filteredProducts.filter(
-                        (product) => updatedProducts.some((updatedProduct) => updatedProduct.id === product.id)
-                    )
-                    setFilteredProducts(updatedFilteredProducts)
-                    messageFromAPI("Eliminación de producto exitosa", body.message)
-                }else
-                    messageFromAPI("Error", body.message)
-            }
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
     const categoriesCheckboxes = categories.map((category, index) => (
         <Form.Check key={`categoria_${index}`}
                     label={category.name}
-                    aria-label={category.name}
                     checked={selectedCategories.includes(category.name)}
                     onChange={() => handleCategoryChange(category.name)}
         />
@@ -233,25 +167,20 @@ const ProductsAdmin = () => {
     const brandsCheckboxes = brands.map((brand, index) => (
         <Form.Check key={`marca_${index}`}
                     label={brand.name}
-                    aria-label={brand.name}
                     checked={selectedBrands.includes(brand.name)}
                     onChange={() => handleBrandChange(brand.name)}/>
     ))
 
     return (
         <div className="container-fluid vw-mw-100 position-relative" style={{marginTop: "30px"}}>
-            <Modal centered show={showModal} onHide={()=>setShowModal(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>{modalTitle}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{modalBody}</Modal.Body>
-                <Modal.Footer>
-                    <button className={modalBtn1Style} onClick={()=>setShowModal(false)}>{modalBtn1Text}</button>
-                    {modalBtn2Show && (
-                        <button className={modalBtn2Style} onClick={() =>handleConfirmDelete()}>{modalBtn2Text}</button>
-                    )}
-                </Modal.Footer>
-            </Modal>
+            <div className="position-absolute top-0 start-50 translate-middle-x mt-1 z-1000">
+                <Toast show={showToast} onClose={() => setShowToast(false)} delay={3000} autohide bg="danger">
+                    <Toast.Header>
+                        <strong className="me-auto">Error</strong>
+                    </Toast.Header>
+                    <Toast.Body>{toastMessage}</Toast.Body>
+                </Toast>
+            </div>
             <div className="row">
                 <div className="col-md-3 p-1">
                     <div className="bg-F4F6F0 py-2 px-3 text-start div-scroll">
@@ -267,7 +196,7 @@ const ProductsAdmin = () => {
                                     onChange={setPrice}
                                     min={minPrice}
                                     max={maxPrice}
-                                    />
+                                />
                             </Form.Group>
                             <Form.Group className="mb-3">
                                 <Form.Label className="h5 text-muted">Categoría</Form.Label>
@@ -298,17 +227,11 @@ const ProductsAdmin = () => {
                                 </InputGroup>
                             </Form>
                         </div>
-                        <div className="col-auto">
-                            <button type="button" className="btn btn-primary" onClick={() => navigate("/admin/products/add")}>
-                                <FontAwesomeIcon icon={faAdd} className="me-2"/>
-                                Nuevo producto
-                            </button>
-                        </div>
                     </div>
                     <div className="row">
                         <div className="col">
                             <div className="bg-F4F6F0 py-3 px-4 text-start">
-                                <h1 className="display-6 mb-2 text-lg-start">Productos</h1>
+                                <h1 className="display-6 mb-2 text-lg-start">Inventario</h1>
                                 <div className="table-responsive table-scroll mb-2">
                                     <Table striped bordered hover>
                                         <thead>
@@ -317,7 +240,7 @@ const ProductsAdmin = () => {
                                             <th>Categoría</th>
                                             <th>Cantidad</th>
                                             <th>Precio</th>
-                                            <th>Acción</th>
+                                            <th>Fecha</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -327,20 +250,12 @@ const ProductsAdmin = () => {
                                                 <td>{product.category}</td>
                                                 <td>{product.amount}</td>
                                                 <td>₡{product.outlet_price}</td>
-                                                <td>
-                                                    <button className="btn btn-sm btn-primary me-1" aria-label={"Editar producto"} onClick={() => handleEdit(product)}>
-                                                        <FontAwesomeIcon icon={faEdit}/>
-                                                    </button>
-                                                    <button className="btn btn-sm btn-danger" aria-label={"Borrar producto"} onClick={() => handleDelete(product.id)}>
-                                                        <FontAwesomeIcon icon={faTrash}/>
-                                                    </button>
-                                                </td>
+                                                <td>{product.date}</td>
                                             </tr>
                                         ))}
                                         </tbody>
                                     </Table>
                                 </div>
-                                <button className="btn btn-primary" onClick={() => navigate("/admin/inventory")}>Historial de movimientos</button>
                             </div>
                         </div>
                     </div>
@@ -350,4 +265,4 @@ const ProductsAdmin = () => {
     )
 }
 
-export default ProductsAdmin
+export default Inventory

@@ -42,7 +42,6 @@ const ProductsEditAdmin = () => {
     const [id, setId] = useState(null)
     const categoryElement = document.getElementById('category_select')
     const brandElement = document.getElementById('brand_select')
-    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -105,9 +104,7 @@ const ProductsEditAdmin = () => {
 
         fetchCategories()
         fetchBrands()
-        fetchProductImages().then(() => {
-            setIsLoading(false)
-        })
+        fetchProductImages()
     }, [])
 
     useEffect(() => {
@@ -318,46 +315,42 @@ const ProductsEditAdmin = () => {
             </Modal>
             <div className="row">
                 <div className="col-md-5 py-1 px-2">
-                    {isLoading ? (
-                        <p>Cargando imágenes...</p>
-                    ) : (
-                        <div className="row bg-F4F6F0 py-3 px-2" tabIndex="0" onKeyDown={handleKeyDown}>
-                            <div className="col-auto carousel-image-button-scroll">
-                                {imageList.map((image, index) => (
-                                    <div className="row mb-1" key={index}>
-                                        <div className="col">
-                                            <img
-                                                src={`data:image/png;base64,${image.image}`}
-                                                className={`carousel-image-button ${index === selectedIndex ? 'selected' : ''}`}
-                                                alt={`Slide ${index}`}
-                                                onClick={() => handleThumbnailClick(index)}
-                                            />
-                                        </div>
+                    <div className="row bg-F4F6F0 py-3 px-2" tabIndex="0" onKeyDown={handleKeyDown}>
+                        <div className="col-auto carousel-image-button-scroll">
+                            {imageList.map((image, index) => (
+                                <div className="row mb-1" key={index}>
+                                    <div className="col">
+                                        <img
+                                            src={`data:image/png;base64,${image.image}`}
+                                            className={`carousel-image-button ${index === selectedIndex ? 'selected' : ''}`}
+                                            alt={`Slide ${index}`}
+                                            onClick={() => handleThumbnailClick(index)}
+                                        />
                                     </div>
-                                ))}
-                            </div>
-                            <div className="col flex-grow-1">
-                                <Carousel activeIndex={selectedIndex} onSelect={handleSelect}
-                                          className="position-relative">
-                                    {imageList.map((image, index) => (
-                                        <Carousel.Item key={index}>
-                                            <img
-                                                className="d-block w-100"
-                                                src={`data:image/png;base64,${image.image}`}
-                                                alt={image.description}
-                                            />
-                                            <button
-                                                className="btn btn-sm btn-danger position-absolute top-0 end-0 me-1 mt-1"
-                                                style={{zIndex: 999}}
-                                                onClick={() => handleDeleteImage(image.id)}>
-                                                <FontAwesomeIcon icon={faTrash}/>
-                                            </button>
-                                        </Carousel.Item>
-                                    ))}
-                                </Carousel>
-                            </div>
+                                </div>
+                            ))}
                         </div>
-                    )}
+                        <div className="col flex-grow-1">
+                            <Carousel activeIndex={selectedIndex} onSelect={handleSelect}
+                                      className="position-relative">
+                                {imageList.map((image, index) => (
+                                    <Carousel.Item key={index}>
+                                        <img
+                                            className="d-block w-100"
+                                            src={`data:image/png;base64,${image.image}`}
+                                            alt={image.description}
+                                        />
+                                        <button
+                                            className="btn btn-sm btn-danger position-absolute top-0 end-0 me-1 mt-1"
+                                            style={{zIndex: 999}}
+                                            onClick={() => handleDeleteImage(image.id)}>
+                                            <FontAwesomeIcon icon={faTrash}/>
+                                        </button>
+                                    </Carousel.Item>
+                                ))}
+                            </Carousel>
+                        </div>
+                    </div>
                     <div className="row bg-F4F6F0 pb-3 px-2">
                         <div className="col text-start">
                             <Form noValidate validated={imageValidated} onSubmit={handleUploadImage}>
@@ -374,16 +367,16 @@ const ProductsEditAdmin = () => {
                                         válido.</Form.Control.Feedback>
                                 </Form.Group>
                                 <Form.Group className="mb-3">
-                                    <textarea
-                                        className="form-control"
-                                        rows={3}
-                                        placeholder="Escriba la descripción de la imagen aquí..."
-                                        value={imageDescription}
-                                        onChange={(e) => {
-                                            setImageDescription(e.target.value)
-                                        }}
-                                        maxLength={140}
-                                    />
+                                <textarea
+                                    className="form-control"
+                                    rows={3}
+                                    placeholder="Escriba la descripción de la imagen aquí..."
+                                    value={imageDescription}
+                                    onChange={(e) => {
+                                        setImageDescription(e.target.value)
+                                    }}
+                                    maxLength={140}
+                                />
                                 </Form.Group>
                                 <div className="text-end">
                                     <button type="submit" className="btn btn-primary">Subir imagen</button>
@@ -407,14 +400,14 @@ const ProductsEditAdmin = () => {
                                 <Form.Control.Feedback type={"invalid"}>Por favor escriba el nombre del producto.</Form.Control.Feedback>
                             </Form.Group>
                             <Form.Group className="mb-3">
-                                <textarea
-                                    className="form-control"
-                                    rows={6}
-                                    value={product.description}
-                                    onChange={(e) => setProduct({...product, description: e.target.value})}
-                                    placeholder="Escriba la descripción del producto aquí..."
-                                    maxLength={300}
-                                />
+                            <textarea
+                                className="form-control"
+                                rows={6}
+                                value={product.description}
+                                onChange={(e) => setProduct({...product, description: e.target.value})}
+                                placeholder="Escriba la descripción del producto aquí..."
+                                maxLength={300}
+                            />
                             </Form.Group>
                             <div className="row">
                                 <div className="col text-start">
