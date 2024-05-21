@@ -83,6 +83,7 @@ const Payment = () => {
         if (storedCart) {
             console.log(cart)
             setCart(storedCart);
+            
         }
     }, []);
 
@@ -159,6 +160,10 @@ const Payment = () => {
 
   return (
     <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+        {cart.forEach(product => {
+                const productSubtotal = product.outlet_price * product.quantity;
+                subtotal += productSubtotal;
+        })}
         <Modal centered show={showModal} onHide={()=>setShowModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>{modalTitle}</Modal.Title>

@@ -21,6 +21,8 @@ const commentHistory = () => {
 
     const [commentsP,setCommentsP] = useState([])
     const [comments, setComments] = useState('');
+    const [sales, setSales] = useState([]);
+    const [history, setHistory] = useState([]);
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const [toastBg, setToastBg] = useState('danger');
@@ -43,6 +45,31 @@ const commentHistory = () => {
     const handleTabChange = (eventKey) => {
         setActiveTab(eventKey);
     };
+
+    useEffect(() => {
+        const fetchHistory = async () => {
+            try {
+                const response = await getController("/get_sales");
+
+                if (!response) {
+                    setToastMessage("Fallo inesperado en la conexión");
+                    setShowToast(true);
+                }else {
+                    const body = await response.json();
+                    if (!response.ok) {
+                        setToastMessage(body.message)
+                        setShowToast(true);
+                    } else
+                        setSales(body.sales);
+                    console.log(sales)
+
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchHistory()
+    }, []);
 
     useEffect(() => {
         const fetchComments = async () => {
@@ -135,7 +162,8 @@ const commentHistory = () => {
 
 
   return (
-    <Row className='min-vw-100 mt-5'>
+    <Container className='container-fluid vw-mw-100 position-relative'>
+    <Row className='w-100 mt-5'>
         <h1 className='text-start'>Pedidos y deseos</h1>
         <Modal centered show={showModal} onHide={()=>setShowModal(false)}>
 
@@ -185,8 +213,58 @@ const commentHistory = () => {
         </Nav>
         <Tab.Content>
             <Tab.Pane eventKey="history">
-            <div className='min-vh-100' style={{marginTop:"20px", backgroundColor: "#F4F6F0", borderRadius: "10px", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "24px" }}>
-                        No hay historial.</div>
+            <Row><Col><h2 className='text-start'>Historial de pedidos</h2></Col></Row>
+                <Row><Col></Col><div className='text-start'>{sales.filter(order => order.email === userData.email).length} pedidos</div></Row>
+                <Row className='min-vh-100'>
+                    <Col className=' min-vh-100 d-flex text-start align-items-center'>
+                        <div className='h-100 w-100'>
+                            {sales.filter(order => order.email === userData.email).length === 0 ? (
+                                <div className='h-100 w-100' style={{marginTop:"20px", backgroundColor: "#F4F6F0", borderRadius: "10px", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "24px" }}>
+                                No hay pedidos.</div>
+                            ) : (
+                                sales.filter(cart => cart.email === userData.email).map((cart, index) => (
+                                    <Row key={index}>
+                                        <Col className='text-start mt-3 m-3 min-vh-25' >
+                                            <div style={{backgroundColor:"#F4F6F0", borderRadius:"10px"}}>
+                                                <Row>
+                                                    <Col className="text-start">
+                                                        <Row className="align-items-center justify-content-center">
+                                                        <Col className="text-center">
+                                                        <div className="d-flex justify-content-center align-items-center" style={{ marginTop:"30px" }}>
+                                                                <img
+                                                                    style={{ maxHeight: "30%", maxWidth: "30%" }}
+                                                                    className="img-fluid"
+                                                                    src={`data:image/png;base64,${cart.image}`}
+                                                                    alt="Imagen"
+                                                                />
+                                                            </div>
+                                                            <Row className="align-items-center px-5" style={{fontSize:"28px"}}>
+                                                            <Col className="align-items-center p-2">{cart.pName} x{cart.quantity}</Col>
+                                                            </Row>
+                                                        </Col>
+                                                        </Row>
+                                                        
+                                                    </Col>
+                                                    <Col className='m-5'>
+                                                        <Row  className="d-flex align-items-center h2">
+                                                            Orden #{cart.cartId}
+                                                        </Row>
+                                                        <Row className='pt-5 h2'>Total: ₡{cart.subtotal}</Row>
+                                                        
+
+                                                    </Col>
+                                                    
+                                                    </Row>
+
+                                                        </div>
+                                                    </Col>
+                                                </Row>
+                                            ))
+                                        )}
+                                    </div>
+                                </Col>
+                            </Row>
+
             </Tab.Pane>
             <Tab.Pane eventKey="wishlist">
             <div className='min-vh-100' style={{marginTop:"20px", backgroundColor: "#F4F6F0", borderRadius: "10px", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "24px" }}>
@@ -283,6 +361,7 @@ const commentHistory = () => {
             </Col>
             {/*FIN DEL TAB */}
         </Row>
+        </Container>
     )
 }
 
